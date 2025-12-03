@@ -70,8 +70,6 @@ jobs:
             else
                 echo "No existing application running"
             fi
-
-      # 8️⃣ Run New Application
       - name: Run Application on EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -85,10 +83,32 @@ jobs:
 
             cd /home/ec2-user/app/target
 
-            sudo nohup java -jar datastore-0.0.7.jar \
-              --MYSQL_HOST="jdbc:mysql://database-1.cwv0y4skwfjn.us-east-1.rds.amazonaws.com:3306/datastore?createDatabaseIfNotExist=true" \
-              --MYSQL_USERNAME="admin" \
-              --MYSQL_PASSWORD="cloud123" \
-              --LOG_FILE_PATH="/var/log/app/datastore.log" \
+            export MYSQL_HOST="${{ secrets.MYSQL_HOST }}"
+            export MYSQL_USERNAME="${{ secrets.MYSQL_USERNAME }}"
+            export MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
+            export LOG_FILE_PATH="/var/log/app/datastore.log"
+
+            nohup java -jar datastore-0.0.7.jar \
               --server.port=8084 > /var/log/app/nohup.out 2>&1 &
-            echo "🚀 New Application Started"
+
+      # # 8️⃣ Run New Application
+      # - name: Run Application on EC2
+      #   uses: appleboy/ssh-action@v1.1.0
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ec2-user
+      #     key: ${{ secrets.EC2_KEY }}
+      #     script: |
+      #       sudo mkdir -p /var/log/app
+      #       sudo chown ec2-user:ec2-user /var/log/app
+      #       sudo chmod 777 /var/log/app
+
+      #       cd /home/ec2-user/app/target
+
+      #       sudo nohup java -jar datastore-0.0.7.jar \
+      #         --MYSQL_HOST="jdbc:mysql://database-1.cwv0y4skwfjn.us-east-1.rds.amazonaws.com:3306/datastore?createDatabaseIfNotExist=true" \
+      #         --MYSQL_USERNAME="admin" \
+      #         --MYSQL_PASSWORD="cloud123" \
+      #         --LOG_FILE_PATH="/var/log/app/datastore.log" \
+      #         --server.port=8084 > /var/log/app/nohup.out 2>&1 &
+      #       echo "🚀 New Application Started"
